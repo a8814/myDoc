@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<!-- saved from url=(0110)https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#general-structure- -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>From Built-in to URP</title>
+  <meta name="description" content="Unity’s Scriptable Render Pipeline represents a great advance on the way that unity deals with graphics, giving more power to the users to customize the pipe...">
+
+  <link rel="stylesheet" href="./From Built-in to URP_files/main.css">
+  <link rel="canonical" href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html">
+  <link rel="alternate" type="application/rss+xml" title="Teofilo Dutra" href="https://teofilobd.github.io/feed.xml">
+  
+  
+  
+  <link rel="stylesheet" href="./From Built-in to URP_files/font-awesome.min.css">
+</head>
+
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="https://teofilobd.github.io/">Teofilo Dutra</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger">
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="https://teofilobd.github.io/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope="" itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">From Built-in to URP</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2020-05-18T00:00:00+00:00" itemprop="datePublished">May 18, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Unity’s <a href="https://unity.com/srp" target="_blank">Scriptable Render Pipeline</a> represents a great advance on the way that unity deals with graphics, giving more power to the users to customize the pipeline the way they want. I have started to use the <a href="https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html" target="_blank">Universal Render Pipeline (URP)</a> recently and, despite all its advantages over the built-in pipeline, it still suffers of lack of documentation. I mean, you can find information of every function available in the package documentation, but it’s still hard to find examples and translations from built-in to URP. Unity’s docs are (were?) good because when you look for something, you usually find the explanation of that and sometimes it’s followed by an example of how to use that.</p>
+
+<p>I am pretty sure that Unity is working on improving the current situation of the docs (specially regarding packages), but while that’s not available I decided to write this article with a kind of translation from built-in to URP. I’m doing this not only to help others, but to help myself as well, so I can find all things in one place.</p>
+
+<p>Before starting, here are some useful links to help you dive into URP stuff:</p>
+<ul>
+  <li><a href="https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html" target="_blank">URP package docs</a></li>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal" target="_blank">URP github</a></li>
+  <li><a href="https://github.com/Unity-Technologies/UniversalRenderingExamples" target="_blank">Official examples</a></li>
+  <li><a href="https://gist.github.com/phi-lira/10159a824e4e522060c47e21762941bb" target="_blank">Unlit template</a></li>
+  <li><a href="https://github.com/Verasl/BoatAttack" target="_blank">Boat attack demo project</a></li>
+  <li><a href="https://github.com/phi-lira/UniversalShaderExamples" target="_blank">Phil Lira’s shader examples</a></li>
+  <li><a href="https://alexanderameye.github.io/outlineshader" target="_blank">Outline post-effect using ScriptableRendererFeature</a></li>
+  <li><a href="https://twitter.com/phi_lira" target="_blank">Phil Lira’s twitter</a></li>
+</ul>
+
+<h2 id="summary">Summary</h2>
+
+<p>Okay! So let’s go! All things here are mostly based on version 7.3 (version I’m using currently) sooo… you know… things might change. Some of the sections follow the built-in documentation order. The article is organized as follows:</p>
+
+<ol>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#general-structure-">General Structure</a></li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#shader-include-files-">Shader Include Files</a></li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#light-modes-">Light Modes</a></li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#variants-">Variants</a></li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#predefined-shader-preprocessor-macros-">Predefined Shader Preprocessor Macros</a>
+    <ol>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#helpers-">Helpers</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#shadow-mapping-">Shadow Mapping</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#texturesampler-declaration-macros-">Texture/Sampler Declaration Macros</a></li>
+    </ol>
+  </li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#built-in-shader-helper-functions-">Built-in Shader Helper Functions</a>
+    <ol>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#vertex-transformation-functions-">Vertex Transformation Functions</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#generic-helper-functions-">Generic Helper Functions</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#forward-rendering-helper-functions-">Forward Rendering Helper Functions</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#screen-space-helper-functions-">Screen-space Helper Functions</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#vertex-lit-helper-functions-">Vertex-lit Helper Functions</a></li>
+    </ol>
+  </li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#built-in-shader-variables-">Built-in Shader Variables</a>
+    <ol>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#lighting-">Lighting</a></li>
+    </ol>
+  </li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#random-stuff-">Random Stuff</a>
+    <ol>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#shadows-">Shadows</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#fog-">Fog</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#depth-">Depth</a></li>
+      <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#etc-">Etc.</a></li>
+    </ol>
+  </li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#post-processingvfx-">Post-processing/VFX</a></li>
+  <li><a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#conclusion-">Conclusion</a></li>
+</ol>
+
+<h2 id="general-structure-">General Structure <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<p>First of all, add <code class="language-plaintext highlighter-rouge">"RenderPipeline" = "UniversalPipeline"</code> to your tags. Next, all URP shaders are written using <code class="language-plaintext highlighter-rouge">HLSL</code> embraced by <code class="language-plaintext highlighter-rouge">HLSLPROGRAM/ENDHLSL/etc.</code> macros. To avoid headaches, use them as well.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CGPROGRAM<br>HLSLPROGRAM</td>
+      <td>HLSLPROGRAM</td>
+    </tr>
+    <tr>
+      <td>ENDCG<br>ENDHLSL</td>
+      <td>ENDHLSL</td>
+    </tr>
+    <tr>
+      <td>CGINCLUDE<br>HLSLINCLUDE</td>
+      <td>HLSLINCLUDE</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="shader-include-files-">Shader Include Files <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Content</th>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Core</td>
+      <td>Unity.cginc</td>
+      <td><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl" target="_blank">Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl</a></td>
+    </tr>
+    <tr>
+      <td>Light</td>
+      <td>AutoLight.cginc</td>
+      <td><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" target="_blank">Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl</a></td>
+    </tr>
+    <tr>
+      <td>Shadows</td>
+      <td>AutoLight.cginc</td>
+      <td><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl" target="_blank">Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl</a></td>
+    </tr>
+    <tr>
+      <td>Surface shaders</td>
+      <td>Lighting.cginc</td>
+      <td>None, but you can find a side project for this <a href="https://github.com/phi-lira/UniversalShaderExamples/tree/master/Assets/_ExampleScenes/51_LitPhysicallyBased" target="_blank">here</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Other useful includes:</p>
+<ul>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl" target="_blank">Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl</a></li>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl" target="_blank">Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl</a></li>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl" target="_blank">Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl</a></li>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl" target="_blank">Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl</a></li>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl" target="_blank">Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl</a></li>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl" target="_blank">Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl</a></li>
+  <li><a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl" target="_blank">Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTextue.hlsl</a></li>
+</ul>
+
+<h2 id="light-modes-">Light Modes <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ForwardBase</td>
+      <td>UniversalForward</td>
+    </tr>
+    <tr>
+      <td>ForwardAdd</td>
+      <td>Gone</td>
+    </tr>
+    <tr>
+      <td>Deferred and related</td>
+      <td><a href="https://github.com/Unity-Technologies/Graphics/pull/71" target="_blank">UniversalGBuffer seems to have just been added to URP</a></td>
+    </tr>
+    <tr>
+      <td>Vertex and related</td>
+      <td>Gone</td>
+    </tr>
+    <tr>
+      <td>ShadowCaster</td>
+      <td>ShadowCaster</td>
+    </tr>
+    <tr>
+      <td>MotionVectors</td>
+      <td>Not suppoted yet</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The other light modes supported are:</p>
+<ul>
+  <li>DepthOnly</li>
+  <li>Meta (for lightmap baking)</li>
+  <li>Universal2D</li>
+</ul>
+
+<h2 id="variants-">Variants <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<p>URP support some variants, so depending on the things you are using, you might need to add some <code class="language-plaintext highlighter-rouge">#pragma multi_compile</code> for some of the following keywords:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">_MAIN_LIGHT_SHADOWS</code></li>
+  <li><code class="language-plaintext highlighter-rouge">_MAIN_LIGHT_SHADOWS_CASCADE</code></li>
+  <li><code class="language-plaintext highlighter-rouge">_ADDITIONAL_LIGHTS_VERTEX</code></li>
+  <li><code class="language-plaintext highlighter-rouge">_ADDITIONAL_LIGHTS</code></li>
+  <li><code class="language-plaintext highlighter-rouge">_ADDITIONAL_LIGHT_SHADOWS</code></li>
+  <li><code class="language-plaintext highlighter-rouge">_SHADOWS_SOFT</code></li>
+  <li><code class="language-plaintext highlighter-rouge">_MIXED_LIGHTING_SUBTRACTIVE</code></li>
+</ul>
+
+<h2 id="predefined-shader-preprocessor-macros-">Predefined Shader Preprocessor Macros <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<h3 id="helpers-">Helpers <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>UNITY_PROJ_COORD</strong>(<em>a</em>)</td>
+      <td>Gone. Do <strong>a.xy/a.w</strong> instead</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_INITIALIZE_OUTPUT</strong>(<em>type</em>, <em>name</em>)</td>
+      <td><strong>ZERO_INITIALIZE</strong>(<em>type</em>, <em>name</em>)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="shadow-mapping-">Shadow Mapping <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<p>You must include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl”</a>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>UNITY_DECLARE_SHADOWMAP</strong>(<em>tex</em>)</td>
+      <td><strong>TEXTURE2D_SHADOW_PARAM</strong>(<em>textureName</em>, <em>samplerName</em>)</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_SAMPLE_SHADOW</strong>(<em>tex</em>, <em>uv</em>)</td>
+      <td><strong>SAMPLE_TEXTURE2D_SHADOW</strong>(<em>textureName</em>, <em>samplerName</em>, <em>coord3</em>)</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_SAMPLE_SHADOW_PROJ</strong>(<em>tex</em>, <em>uv</em>)</td>
+      <td><strong>SAMPLE_TEXTURE2D_SHADOW</strong>(<em>textureName</em>, <em>samplerName</em>, <em>coord4.xyz/coord4.w</em>)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="texturesampler-declaration-macros-">Texture/Sampler Declaration Macros <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<p>Unity has a bunch of texture/sampler macros to improve cross compatibility between APIs, but people are not used to use them. Those still exist in URP, but now with different names and new additions. I will not put all of them here because it’s a lot, but you can check their definitions per platform in the <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/API" target="_blank">API includes</a>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>UNITY_DECLARE_TEX2D</strong>(<em>name</em>)</td>
+      <td><strong>TEXTURE2D</strong>(<em>textureName</em>); <strong>SAMPLER</strong>(<em>samplerName</em>);</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_DECLARE_TEX2D_NOSAMPLER</strong>(<em>name</em>)</td>
+      <td><strong>TEXTURE2D</strong>(<em>textureName</em>);</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_DECLARE_TEX2DARRAY</strong>(<em>name</em>)</td>
+      <td><strong>TEXTURE2D_ARRAY</strong>(<em>textureName</em>); <strong>SAMPLER</strong>(<em>samplerName</em>);</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_SAMPLE_TEX2D</strong>(<em>name</em>, <em>uv</em>)</td>
+      <td><strong>SAMPLE_TEXTURE2D</strong>(<em>textureName</em>, <em>samplerName</em>, <em>coord2</em>)</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_SAMPLE_TEX2D_SAMPLER</strong>(<em>name</em>, <em>samplername</em>, <em>uv</em>)</td>
+      <td><strong>SAMPLE_TEXTURE2D</strong>(<em>textureName</em>, <em>samplerName</em>, <em>coord2</em>)</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_SAMPLE_TEX2DARRAY</strong>(<em>name</em>, <em>uv</em>)</td>
+      <td><strong>SAMPLE_TEXTURE2D_ARRAY</strong>(<em>textureName</em>, <em>samplerName</em>, <em>coord2</em>, <em>index</em>)</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_SAMPLE_TEX2DARRAY_LOD</strong>(<em>name</em>, <em>uv</em>, <em>lod</em>)</td>
+      <td><strong>SAMPLE_TEXTURE2D_ARRAY_LOD</strong>(<em>textureName</em>, <em>samplerName</em>, <em>coord2</em>, <em>index</em>, <em>lod</em>)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Important to note that <code class="language-plaintext highlighter-rouge">SCREENSPACE_TEXTURE</code> has become <code class="language-plaintext highlighter-rouge">TEXTURE2D_X</code>. If you are working on some screen space effect for VR in <em>Single Pass Instanced</em> or <em>Multi-view</em> modes, you must declare the textures used with <code class="language-plaintext highlighter-rouge">TEXTURE2D_X</code>. This macro will handle for you the correct texture (array or not) declaration. You also have to sample the textures using <code class="language-plaintext highlighter-rouge">SAMPLE_TEXTURE2D_X</code> and use <code class="language-plaintext highlighter-rouge">UnityStereoTransformScreenSpaceTex</code> for the uv.</p>
+
+<h2 id="built-in-shader-helper-functions-">Built-in Shader Helper Functions <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<p>You can find them all in <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl" target="_blank">“Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl”</a>.</p>
+
+<h3 id="vertex-transformation-functions-">Vertex Transformation Functions <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>float4</em> <strong>UnityObjectToClipPos</strong>(<em>float3 pos</em>)</td>
+      <td><em>float4</em> <strong>TransformObjectToHClip</strong>(<em>float3 positionOS</em>)</td>
+    </tr>
+    <tr>
+      <td><em>float3</em> <strong>UnityObjectToViewPos</strong>(<em>float3 pos</em>)</td>
+      <td><strong>TransformWorldToView</strong>(<strong>TransformObjectToWorld</strong>(<em>positionOS</em>))</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="generic-helper-functions-">Generic Helper Functions <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>float3</em> <strong>WorldSpaceViewDir</strong> (<em>float4 v</em>)</td>
+      <td><em>float3</em> <strong>GetWorldSpaceViewDir</strong>(<em>float3 positionWS</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>float3</em> <strong>ObjSpaceViewDir</strong> (<em>float4 v</em>)</td>
+      <td>Gone. Do <strong>TransformWorldToObject</strong>(<strong>GetCameraPositionWS()</strong>) - <em>objectSpacePosition</em>;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>float2</em> <strong>ParallaxOffset</strong> (<em>half h</em>, <em>half height</em>, <em>half3 viewDir</em>)</td>
+      <td>Gone? Copy from UnityCG.cginc</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>fixed</em> <strong>Luminance</strong> (<em>fixed3 c</em>)</td>
+      <td><em>real</em> <strong>Luminance</strong>(<em>real3 linearRgb</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl" target="_blank">“Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>fixed3</em> <strong>DecodeLightmap</strong> (<em>fixed4 color</em>)</td>
+      <td><em>real3</em> <strong>DecodeLightmap</strong>(<em>real4 encodedIlluminance</em>, <em>real4 decodeInstructions</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/blob/master/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl" target="_blank">“Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl”</a> <br> <code class="language-plaintext highlighter-rouge">decodeInstructions</code> is used as <code class="language-plaintext highlighter-rouge">half4(LIGHTMAP_HDR_MULTIPLIER, LIGHTMAP_HDR_EXPONENT, 0.0h, 0.0h)</code> by URP</td>
+    </tr>
+    <tr>
+      <td><em>float4</em> <strong>EncodeFloatRGBA</strong> (<em>float v</em>)</td>
+      <td>Gone? Copy from UnityCG.cginc</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>float</em> <strong>DecodeFloatRGBA</strong> (<em>float4 enc</em>)</td>
+      <td>Gone? Copy from UnityCG.cginc</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>float2</em> <strong>EncodeFloatRG</strong> (<em>float v</em>)</td>
+      <td>Gone? Copy from UnityCG.cginc</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>float</em> <strong>DecodeFloatRG</strong> (<em>float2 enc</em>)</td>
+      <td>Gone? Copy from UnityCG.cginc</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>float2</em> <strong>EncodeViewNormalStereo</strong> (<em>float3 n</em>)</td>
+      <td>Gone? Copy from UnityCG.cginc</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>float3</em> <strong>DecodeViewNormalStereo</strong> (<em>float4 enc4</em>)</td>
+      <td>Gone? Copy from UnityCG.cginc</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="forward-rendering-helper-functions-">Forward Rendering Helper Functions <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>float3</em> <strong>WorldSpaceLightDir</strong> (<em>float4 v</em>)</td>
+      <td><em>_MainLightPosition.xyz</em> - <strong>TransformObjectToWorld</strong>(<em>objectSpacePosition</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>float3</em> <strong>ObjSpaceLightDir</strong> (<em>float4 v</em>)</td>
+      <td><strong>TransformWorldToObject</strong>(<em>_MainLightPosition.xyz</em>) - <em>objectSpacePosition</em></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>float3</em> <strong>Shade4PointLights</strong> (<em>…</em>)</td>
+      <td>Gone. You can try to use <code class="language-plaintext highlighter-rouge">half3 VertexLighting(float3 positionWS, half3 normalWS)</code></td>
+      <td>For <code class="language-plaintext highlighter-rouge">VertexLighting(...)</code> include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl”</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="screen-space-helper-functions-">Screen-space Helper Functions <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>float4</em> <strong>ComputeScreenPos</strong> (<em>float4 clipPos</em>)</td>
+      <td><em>float4</em> <strong>ComputeScreenPos</strong>(<em>float4 positionCS</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>float4</em> <strong>ComputeGrabScreenPos</strong> (<em>float4 clipPos</em>)</td>
+      <td>Gone.</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="vertex-lit-helper-functions-">Vertex-lit Helper Functions <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>float3</em> <strong>ShadeVertexLights</strong> (<em>float4 vertex</em>, <em>float3 normal</em>)</td>
+      <td>Gone. You can try to use <code class="language-plaintext highlighter-rouge">UNITY_LIGHTMODEL_AMBIENT.xyz + VertexLighting(...)</code></td>
+      <td>For <code class="language-plaintext highlighter-rouge">VertexLighting(...)</code> include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl”</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>A bunch of utilities can be found in <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl" target="_blank">“Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl”</a>.</p>
+
+<h2 id="built-in-shader-variables-">Built-in Shader Variables <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<p>Most of the shader variables remains the same, except by lighting.</p>
+
+<h3 id="lighting-">Lighting <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>_LightColor0</em></td>
+      <td><em>_MainLightColor</em></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>_WorldSpaceLightPos0</em></td>
+      <td><em>_MainLightPosition</em></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>_LightMatrix0</em></td>
+      <td>Gone ? Cookies are not supported yet</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><em>unity_4LightPosX0</em>, <em>unity_4LightPosY0</em>, <em>unity_4LightPosZ0</em></td>
+      <td>In URP, additional lights are stored in an array/buffer (depending on platform). Retrieve light information using <code class="language-plaintext highlighter-rouge">Light GetAdditionalLight(uint i, float3 positionWS)</code></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>unity_4LightAtten0</em></td>
+      <td>In URP, additional lights are stored in an array/buffer (depending on platform). Retrieve light information using <code class="language-plaintext highlighter-rouge">Light GetAdditionalLight(uint i, float3 positionWS)</code></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>unity_LightColor</em></td>
+      <td>In URP, additional lights are stored in an array/buffer (depending on platform). Retrieve light information using <code class="language-plaintext highlighter-rouge">Light GetAdditionalLight(uint i, float3 positionWS)</code></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>unity_WorldToShadow</em></td>
+      <td><code class="language-plaintext highlighter-rouge">float4x4 _MainLightWorldToShadow[MAX_SHADOW_CASCADES + 1]</code> or <code class="language-plaintext highlighter-rouge">_AdditionalLightsWorldToShadow[MAX_VISIBLE_LIGHTS]</code></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl”</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>If you want to loop over all additional lights using <code class="language-plaintext highlighter-rouge">GetAdditionalLight(...)</code>, you can query the additional lights count by using <code class="language-plaintext highlighter-rouge">GetAdditionalLightsCount()</code>.</p>
+
+<h2 id="random-stuff-">Random Stuff <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<h3 id="shadows-">Shadows <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<p>For more info about shadows, check <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl”</a>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>UNITY_SHADOW_COORDS</strong>(<em>x</em>)</td>
+      <td>Gone? DIY, e.g. <code class="language-plaintext highlighter-rouge">float4 shadowCoord : TEXCOORD0;</code></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><strong>TRANSFER_SHADOW</strong>(<em>a</em>)</td>
+      <td><em>a.shadowCoord</em> = <strong>TransformWorldToShadowCoord</strong>(<em>worldSpacePosition</em>)</td>
+      <td>With cascades on, do this on fragment to avoid visual artifacts</td>
+    </tr>
+    <tr>
+      <td><strong>SHADOWS_SCREEN</strong></td>
+      <td>Gone. Not supported.</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="fog-">Fog <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<p>For more info about fog, check <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderVariablesFunctions.hlsl”</a>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>UNITY_FOG_COORDS</strong>(<em>x</em>)</td>
+      <td>Gone? DIY, e.g. <code class="language-plaintext highlighter-rouge">float fogCoord : TEXCOORD0;</code></td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_TRANSFER_FOG</strong>(<em>o</em>, <em>outpos</em>)</td>
+      <td><em>o.fogCoord</em> = <strong>ComputeFogFactor</strong>(<em>clipSpacePosition.z</em>);</td>
+    </tr>
+    <tr>
+      <td><strong>UNITY_APPLY_FOG</strong>(<em>coord</em>, <em>col</em>)</td>
+      <td><em>color</em> = <strong>MixFog</strong>(<em>color</em>, <em>i.fogCoord</em>);</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="depth-">Depth <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<p>To use the camera depth texture, include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl”</a> and the <code class="language-plaintext highlighter-rouge">_CameraDepthTexture</code> will be declared for you as well as helper the functions <code class="language-plaintext highlighter-rouge">SampleSceneDepth(...)</code> and <code class="language-plaintext highlighter-rouge">LoadSceneDepth(...)</code>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>LinearEyeDepth</strong>(<em>sceneZ</em>)</td>
+      <td><strong>LinearEyeDepth</strong>(<em>sceneZ</em>, <em>_ZBufferParams</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl" target="_blank">“Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><strong>Linear01Depth</strong>(<em>sceneZ</em>)</td>
+      <td><strong>Linear01Depth</strong>(<em>sceneZ</em>, <em>_ZBufferParams</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl" target="_blank">“Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl”</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="etc-">Etc. <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Built-in</th>
+      <th>URP</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>ShadeSH9</strong>(<em>normal</em>)</td>
+      <td><strong>SampleSH</strong>(<em>normal</em>)</td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" target="_blank">“Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl”</a></td>
+    </tr>
+    <tr>
+      <td><em>unity_ColorSpaceLuminance</em></td>
+      <td>Gone. Use <code class="language-plaintext highlighter-rouge">Luminance()</code></td>
+      <td>Include <a href="https://github.com/Unity-Technologies/Graphics/tree/master/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl" target="_blank">“Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl”</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="post-processingvfx-">Post-processing/VFX <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<p>URP does not support <code class="language-plaintext highlighter-rouge">OnPreCull</code>, <code class="language-plaintext highlighter-rouge">OnPreRender</code>, <code class="language-plaintext highlighter-rouge">OnPostRender</code> and <code class="language-plaintext highlighter-rouge">OnRenderImage</code>. It does support <code class="language-plaintext highlighter-rouge">OnRenderObject</code> and <code class="language-plaintext highlighter-rouge">OnWillRenderObject</code>, but you might find issues depending on what you want to do. So, If you used to use those when creating your visual effects, I recommend learning how to use the new approaches available. The <code class="language-plaintext highlighter-rouge">RenderPipelineManager</code> provides the following injection points in the pipeline:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">beginCameraRendering(ScriptableRenderContext context, Camera camera)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">endCameraRendering(ScriptableRenderContext context, Camera camera)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">beginFrameRendering(ScriptableRenderContext context,Camera[] cameras)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">endFrameRendering(ScriptableRenderContext context,Camera[] cameras)</code></li>
+</ul>
+
+<p>Example of usage:</p>
+<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">void</span> <span class="nf">OnEnable</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="n">RenderPipelineManager</span><span class="p">.</span><span class="n">beginCameraRendering</span> <span class="p">+=</span> <span class="n">MyCameraRendering</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">void</span> <span class="nf">OnDisable</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="n">RenderPipelineManager</span><span class="p">.</span><span class="n">beginCameraRendering</span> <span class="p">-=</span> <span class="n">MyCameraRendering</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">void</span> <span class="nf">MyCameraRendering</span><span class="p">(</span><span class="n">ScriptableRenderContext</span> <span class="n">context</span><span class="p">,</span> <span class="n">Camera</span> <span class="n">camera</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="p">...</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">camera</span> <span class="p">==</span> <span class="n">myEffectCamera</span><span class="p">)</span>
+	<span class="p">{</span>
+	<span class="p">...</span>
+	<span class="p">}</span>
+	<span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Like I said, <code class="language-plaintext highlighter-rouge">OnWillRenderObject</code> is supported, however if you need to perform a render call inside of it (e.g. water reflection/refraction), it will not work. As soon as you call <code class="language-plaintext highlighter-rouge">Camera.Render()</code>, you will see the following message:</p>
+
+<blockquote>
+  <p>Recursive rendering is not supported in SRP (are you calling Camera.Render from within a render pipeline?)</p>
+</blockquote>
+
+<p>In this case, replace the <code class="language-plaintext highlighter-rouge">OnWillRenderObject</code> by <code class="language-plaintext highlighter-rouge">begin/endCameraRendering</code> (like the example above) and call <code class="language-plaintext highlighter-rouge">RenderSingleCamera()</code> from URP instead of <code class="language-plaintext highlighter-rouge">Camera.Render()</code>. Changing the example above, you would have something like</p>
+<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">void</span> <span class="nf">MyCameraRendering</span><span class="p">(</span><span class="n">ScriptableRenderContext</span> <span class="n">context</span><span class="p">,</span> <span class="n">Camera</span> <span class="n">camera</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="p">...</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">camera</span> <span class="p">==</span> <span class="n">myEffectCamera</span><span class="p">)</span>
+	<span class="p">{</span>
+	<span class="p">...</span>
+		<span class="n">UniversalRenderPipeline</span><span class="p">.</span><span class="nf">RenderSingleCamera</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The other approach to work with Post-processing is to use a <code class="language-plaintext highlighter-rouge">ScriptableRendererFeature</code>. <a href="https://alexanderameye.github.io/outlineshader" target="_blank">This post</a> has a great explanation of an outline effect using this feature. A <code class="language-plaintext highlighter-rouge">ScriptableRendererFeature</code> allows you to inject <code class="language-plaintext highlighter-rouge">ScriptableRenderPass(es)</code> at different stages of the pipeline, thus being a powerful tool for creating post-processing effects. The injection places are the following:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">BeforeRendering</code></li>
+  <li><code class="language-plaintext highlighter-rouge">BeforeRenderingShadows</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AfterRenderingShadows</code></li>
+  <li><code class="language-plaintext highlighter-rouge">BeforeRenderingPrepasses</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AfterRenderingPrePasses</code></li>
+  <li><code class="language-plaintext highlighter-rouge">BeforeRenderingOpaques</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AfterRenderingOpaques</code></li>
+  <li><code class="language-plaintext highlighter-rouge">BeforeRenderingSkybox</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AfterRenderingSkybox</code></li>
+  <li><code class="language-plaintext highlighter-rouge">BeforeRenderingTransparents</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AfterRenderingTransparents</code></li>
+  <li><code class="language-plaintext highlighter-rouge">BeforeRenderingPostProcessing</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AfterRenderingPostProcessing</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AfterRendering</code></li>
+</ul>
+
+<p>This is a simple example of a <code class="language-plaintext highlighter-rouge">ScriptableRendererFeature</code> performing a blit with a custom material:</p>
+<div class="language-c# highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">CustomRenderPassFeature</span> <span class="p">:</span> <span class="n">ScriptableRendererFeature</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">CustomRenderPass</span> <span class="p">:</span> <span class="n">ScriptableRenderPass</span>
+    <span class="p">{</span>
+        <span class="n">CustomRPSettings</span> <span class="n">_CustomRPSettings</span><span class="p">;</span>
+        <span class="n">RenderTargetHandle</span> <span class="n">_TemporaryColorTexture</span><span class="p">;</span>
+
+        <span class="k">private</span> <span class="n">RenderTargetIdentifier</span> <span class="n">_Source</span><span class="p">;</span>
+        <span class="k">private</span> <span class="n">RenderTargetHandle</span> <span class="n">_Destination</span><span class="p">;</span>
+
+        <span class="k">public</span> <span class="nf">CustomRenderPass</span><span class="p">(</span><span class="n">CustomRPSettings</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">_CustomRPSettings</span> <span class="p">=</span> <span class="n">settings</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="k">void</span> <span class="nf">Setup</span><span class="p">(</span><span class="n">RenderTargetIdentifier</span> <span class="n">source</span><span class="p">,</span> <span class="n">RenderTargetHandle</span> <span class="n">destination</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">_Source</span> <span class="p">=</span> <span class="n">source</span><span class="p">;</span>
+            <span class="n">_Destination</span> <span class="p">=</span> <span class="n">destination</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span><span class="n">CommandBuffer</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">RenderTextureDescriptor</span> <span class="n">cameraTextureDescriptor</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">_TemporaryColorTexture</span><span class="p">.</span><span class="nf">Init</span><span class="p">(</span><span class="s">"_TemporaryColorTexture"</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Execute</span><span class="p">(</span><span class="n">ScriptableRenderContext</span> <span class="n">context</span><span class="p">,</span> <span class="k">ref</span> <span class="n">RenderingData</span> <span class="n">renderingData</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">CommandBuffer</span> <span class="n">cmd</span> <span class="p">=</span> <span class="n">CommandBufferPool</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">"My Pass"</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">_Destination</span> <span class="p">==</span> <span class="n">RenderTargetHandle</span><span class="p">.</span><span class="n">CameraTarget</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">cmd</span><span class="p">.</span><span class="nf">GetTemporaryRT</span><span class="p">(</span><span class="n">_TemporaryColorTexture</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">renderingData</span><span class="p">.</span><span class="n">cameraData</span><span class="p">.</span><span class="n">cameraTargetDescriptor</span><span class="p">,</span> <span class="n">FilterMode</span><span class="p">.</span><span class="n">Point</span><span class="p">);</span>
+                <span class="n">cmd</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">_Source</span><span class="p">,</span> <span class="n">_TemporaryColorTexture</span><span class="p">.</span><span class="nf">Identifier</span><span class="p">());</span>
+                <span class="n">cmd</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">_TemporaryColorTexture</span><span class="p">.</span><span class="nf">Identifier</span><span class="p">(),</span> <span class="n">_Source</span><span class="p">,</span> <span class="n">_CustomRPSettings</span><span class="p">.</span><span class="n">m_Material</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">else</span>
+            <span class="p">{</span>
+                <span class="n">cmd</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">_Source</span><span class="p">,</span> <span class="n">_Destination</span><span class="p">.</span><span class="nf">Identifier</span><span class="p">(),</span> <span class="n">_CustomRPSettings</span><span class="p">.</span><span class="n">m_Material</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="n">context</span><span class="p">.</span><span class="nf">ExecuteCommandBuffer</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span>
+            <span class="n">CommandBufferPool</span><span class="p">.</span><span class="nf">Release</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">FrameCleanup</span><span class="p">(</span><span class="n">CommandBuffer</span> <span class="n">cmd</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">_Destination</span> <span class="p">==</span> <span class="n">RenderTargetHandle</span><span class="p">.</span><span class="n">CameraTarget</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">cmd</span><span class="p">.</span><span class="nf">ReleaseTemporaryRT</span><span class="p">(</span><span class="n">_TemporaryColorTexture</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">System</span><span class="p">.</span><span class="n">Serializable</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">CustomRPSettings</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="n">Material</span> <span class="n">m_Material</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">CustomRPSettings</span> <span class="n">m_CustomRPSettings</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CustomRPSettings</span><span class="p">();</span>
+    <span class="n">CustomRenderPass</span> <span class="n">_ScriptablePass</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Create</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">_ScriptablePass</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CustomRenderPass</span><span class="p">(</span><span class="n">m_CustomRPSettings</span><span class="p">);</span>
+
+        <span class="n">_ScriptablePass</span><span class="p">.</span><span class="n">renderPassEvent</span> <span class="p">=</span> <span class="n">RenderPassEvent</span><span class="p">.</span><span class="n">AfterRenderingOpaques</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">AddRenderPasses</span><span class="p">(</span><span class="n">ScriptableRenderer</span> <span class="n">renderer</span><span class="p">,</span> <span class="k">ref</span> <span class="n">RenderingData</span> <span class="n">renderingData</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_ScriptablePass</span><span class="p">.</span><span class="nf">Setup</span><span class="p">(</span><span class="n">renderer</span><span class="p">.</span><span class="n">cameraColorTarget</span><span class="p">,</span> <span class="n">RenderTargetHandle</span><span class="p">.</span><span class="n">CameraTarget</span><span class="p">);</span>
+        <span class="n">renderer</span><span class="p">.</span><span class="nf">EnqueuePass</span><span class="p">(</span><span class="n">_ScriptablePass</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>You can create a <code class="language-plaintext highlighter-rouge">ScriptableRendererFeature</code> by clicking on <strong>“Create &gt; Rendering &gt; Universal Render Pipeline &gt; Renderer Feature”</strong>. The feature that you have created has to be added to your <code class="language-plaintext highlighter-rouge">ForwardRenderer</code>. To do so, select the <code class="language-plaintext highlighter-rouge">ForwardRenderer</code>, click on <strong>“Add Renderer Feature”</strong> and select the feature to be added. You can expose properties in the feature inspector, for example, if you add the example above, you will see a material slot available.</p>
+
+<h2 id="conclusion-">Conclusion <a href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html#summary">↑</a></h2>
+
+<p>That’s it for now. I will try to keep this updated <em>(narrator: he won’t)</em> according to the new things I’m learning or new features that I see added. If you have comments or suggestions, you can find me on <a href="https://www.twitter.com/teodutra" target="_blank">twitter</a>.</p>
+
+
+  </div><a class="u-url" href="https://teofilobd.github.io/unity/shaders/urp/graphics/2020/05/18/From-Built-in-to-URP.html" hidden=""></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Teofilo Dutra</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Teofilo Dutra
+            
+            </li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+            <li>
+              <a href="https://twitter.com/teodutra">
+                <i class="fa fa-twitter"></i> Twitter
+              </a>
+            </li>
+          
+          
+          
+            <li>
+              <a href="https://linkedin.com/in/teofilodutra">
+                <i class="fa fa-linkedin"></i> LinkedIn
+              </a>
+            </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>I still don't know exactly the purpose of this site, but you might find here tech stuff  related to shaders, optimization, vr, ar, crowd simulation (?) or some other random stuff.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+
+</body><div style="all: initial;"><div></div></div></html>
